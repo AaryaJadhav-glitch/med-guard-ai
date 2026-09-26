@@ -9,6 +9,7 @@
     "server": "npm --prefix server run dev",
     "client": "npm --prefix client run dev",
     "dev": "concurrently \"npm --prefix server run dev\" \"npm --prefix client run dev\"",
+    "postinstall": "npm --prefix client install",
     "build": "npm --prefix client run build",
     "test": "npm --prefix server test",
     "migrate": "node supabase/scripts/run-migration.js"

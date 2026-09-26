@@ -35,8 +35,8 @@ You must:
 11. Explain each concern clearly with mechanisms.
 12. Distinguish confirmed information from uncertainty.
 13. State when additional clinical information is required.
-14. Provide potential alternatives only as options for professional consideration.
-15. Never claim that an alternative is automatically appropriate. Never use language like "Replace medication X with medication Y"; instead state: "A clinician may consider alternative X depending on the patient's clinical indication and complete medical profile."
+14. MANDATORY ALTERNATIVE TABLETS & MEDICATIONS: For EVERY identified interaction, allergy, or contraindication, YOU MUST ALWAYS recommend safe, concrete alternative tablets or medications in "possibleAlternatives" (provide 1 to 3 options with specific tablet names and dosage strengths, e.g. "Acetaminophen 500mg Tablet", "Azithromycin 250mg Tablet", "Linagliptin 5mg Tablet", "Celecoxib 100mg Capsule"). Explain why this tablet formulation avoids the interaction or allergy, and list prescriber caveats.
+15. Never claim that an alternative is automatically appropriate. State: "A clinician may consider alternative tablet X depending on the patient's clinical indication and complete medical profile."
 16. Return valid structured JSON matching the required schema.
 
 Use conservative clinical reasoning.
@@ -52,7 +52,7 @@ Every clinically significant warning should include:
 - potentialConcern: clinical risk (e.g., hemorrhage, acute kidney injury, anaphylaxis)
 - recommendedClinicalAction: recommended action for the clinician
 - monitoring: array of monitoring parameters
-- possibleAlternatives: array of { name, reason, caveats }
+- possibleAlternatives: array of { name: "Specific Tablet / Med with strength", reason: "Why this tablet is safer", caveats: "Prescriber caveats" }
 - confidence: number between 0 and 1
 - limitations: array of caveats/uncertainties
 `;
@@ -154,9 +154,14 @@ function runClinicalRulesEngine(context) {
         monitoring: ['Vital signs (BP, HR, RR, SpO2)', 'Immediate observation for urticaria, bronchospasm, or angioedema'],
         possibleAlternatives: [
           {
-            name: 'Azithromycin or Doxycycline',
-            reason: 'Clinician may consider a macrolide or tetracycline depending on pathogen sensitivity and infection site.',
+            name: 'Azithromycin 250mg Tablet or Doxycycline 100mg Tablet',
+            reason: 'Clinician may consider a non-beta-lactam macrolide or tetracycline tablet depending on pathogen sensitivity and infection site.',
             caveats: 'Ensure no secondary macrolide intolerance; verify local antibiogram sensitivity.'
+          },
+          {
+            name: 'Ciprofloxacin 500mg Tablet',
+            reason: 'Alternative fluoroquinolone tablet for susceptible gram-negative or urinary tract infections without beta-lactam cross-reactivity.',
+            caveats: 'Review baseline QTc and avoid in tendonitis history.'
           }
         ],
         confidence: 0.98,
@@ -179,9 +184,14 @@ function runClinicalRulesEngine(context) {
         monitoring: ['Respiratory rate', 'Peak expiratory flow if asthmatic'],
         possibleAlternatives: [
           {
-            name: 'Acetaminophen (Paracetamol)',
-            reason: 'Clinician may consider acetaminophen for mild-to-moderate analgesia.',
+            name: 'Acetaminophen (Paracetamol) 500mg Tablet',
+            reason: 'Clinician may consider acetaminophen tablets for mild-to-moderate analgesia without cyclooxygenase-1 cross-reactivity at standard doses.',
             caveats: 'Monitor daily dose maximum (< 2000-3000 mg/day); evaluate hepatic function.'
+          },
+          {
+            name: 'Tramadol 50mg Tablet',
+            reason: 'Centrally-acting analgesic tablet for moderate pain where NSAIDs are strictly contraindicated.',
+            caveats: 'Assess fall risk, sedation, and check for concurrent serotonergic medications.'
           }
         ],
         confidence: 0.95,
@@ -204,9 +214,14 @@ function runClinicalRulesEngine(context) {
           monitoring: ['Serum creatinine and BUN within 7-14 days', 'Serum potassium', 'Blood pressure monitoring'],
           possibleAlternatives: [
             {
-              name: 'Acetaminophen or Topical Analgesics',
-              reason: 'Clinician may consider topical agents (e.g. topical diclofenac) or acetaminophen for localized joint pain with lower systemic renal exposure.',
-              caveats: 'Verify patient has no active liver disease.'
+              name: 'Acetaminophen 500mg Tablet',
+              reason: 'Clinician may consider acetaminophen tablets as a renal-safe analgesic that does not inhibit renal prostaglandins.',
+              caveats: 'Confirm patient has no hepatic impairment; cap dose at 2,000 mg/day in vulnerable patients.'
+            },
+            {
+              name: 'Topical Diclofenac 1% Gel or Lidocaine 5% Patch',
+              reason: 'Clinician may evaluate localized non-systemic interventions with minimal renal clearance impact.',
+              caveats: 'Verify localized area of musculoskeletal pain.'
             }
           ],
           confidence: 0.92,
@@ -229,9 +244,14 @@ function runClinicalRulesEngine(context) {
         monitoring: ['INR within 3-5 days', 'Hemoglobin / Hematocrit', 'Stool for occult blood / signs of GI bleeding'],
         possibleAlternatives: [
           {
-            name: 'Acetaminophen',
-            reason: 'Clinician may consider short-term acetaminophen at modest doses.',
-            caveats: 'High-dose acetaminophen can still modestly potentiate warfarin; check INR after 3-5 days.'
+            name: 'Acetaminophen 500mg Tablet (Short-term)',
+            reason: 'Clinician may prescribe acetaminophen tablets for analgesia to avoid antiplatelet and gastric ulceration bleeding hazards.',
+            caveats: 'High-dose acetaminophen can still modestly potentiate warfarin; recheck INR after 3-5 days.'
+          },
+          {
+            name: 'Celecoxib 100mg Capsule (with Gastroprotection)',
+            reason: 'Selective COX-2 inhibitor tablet associated with lower gastrointestinal ulceration than non-selective NSAIDs.',
+            caveats: 'Requires concomitant PPI (Omeprazole 20mg Tablet) and frequent coagulation monitoring.'
           }
         ],
         confidence: 0.96,
@@ -253,9 +273,14 @@ function runClinicalRulesEngine(context) {
         monitoring: ['Serum potassium', 'Serum creatinine within 1-2 weeks', 'Home blood pressure readings'],
         possibleAlternatives: [
           {
-            name: 'Acetaminophen or Physical Modalities',
-            reason: 'Clinician may evaluate non-systemic interventions for musculoskeletal complaints.',
-            caveats: 'Confirm clinical indication.'
+            name: 'Acetaminophen 500mg Tablet',
+            reason: 'Renal-sparing analgesic tablet that avoids hemodynamic interference with glomerular filtration and ACE-inhibitors.',
+            caveats: 'Verify adequate clinical pain control.'
+          },
+          {
+            name: 'Amlodipine 5mg Tablet (Antihypertensive Adjustment)',
+            reason: 'Calcium channel blocker tablet that preserves renal blood flow without prostaglandin-dependent autoregulation conflicts.',
+            caveats: 'Monitor for peripheral pedal edema.'
           }
         ],
         confidence: 0.90,
@@ -276,7 +301,13 @@ function runClinicalRulesEngine(context) {
           potentialConcern: 'Unintended additive dose toxicity, severe hypotension, or receptor saturation.',
           recommendedClinicalAction: 'Reconcile medication record to clarify if this is a replacement, dose change, or inadvertent duplication.',
           monitoring: ['Blood pressure', 'Target therapeutic parameters'],
-          possibleAlternatives: [],
+          possibleAlternatives: [
+            {
+              name: `${exMed.name} (Single Daily Tablet Titration)`,
+              reason: 'Clinician may consolidate therapy to a single ACE-inhibitor tablet at the target therapeutic dose.',
+              caveats: 'Avoid dual-RAS blockade; verify patient tolerability.'
+            }
+          ],
           confidence: 0.95,
           limitations: ['Verify if provider intended a cross-taper transition.']
         });
@@ -294,7 +325,13 @@ function runClinicalRulesEngine(context) {
         potentialConcern: 'Accumulation toxicity or therapeutic failure if biochemical clearance shifts.',
         recommendedClinicalAction: 'Order baseline renal/liver panel and establish recurring laboratory schedule.',
         monitoring: ['eGFR / Serum Creatinine', 'Therapeutic drug levels / target biomarker', 'Hepatic enzymes'],
-        possibleAlternatives: [],
+        possibleAlternatives: [
+          {
+            name: 'Linagliptin 5mg Tablet',
+            reason: 'If renal clearance is impaired, Linagliptin DPP-4 inhibitor tablets require no renal dose adjustment compared to Metformin.',
+            caveats: 'Evaluate individual HbA1c target and cardiovascular profile.'
+          }
+        ],
         confidence: 0.94,
         limitations: ['Frequency depends on clinical stability and concurrent organ dysfunction.']
       });
@@ -350,8 +387,8 @@ function runClinicalRulesEngine(context) {
 export async function analyzeMedicationSafety(payload) {
   const clinicalContext = buildClinicalContext(payload);
 
-  // If GEMINI_API_KEY is not configured, run clinical rules engine
-  if (!config.geminiApiKey || config.geminiApiKey === 'test-gemini-api-key') {
+  // If GEMINI_API_KEY is not configured or running in automated test suite, run clinical rules engine
+  if (!config.geminiApiKey || config.geminiApiKey === 'test-gemini-api-key' || process.env.NODE_ENV === 'test') {
     console.log('[GeminiService] Running in clinical rules evaluation mode (GEMINI_API_KEY not configured or in test).');
     const result = runClinicalRulesEngine(clinicalContext);
     return AnalysisResponseSchema.parse(result);
@@ -392,16 +429,18 @@ Provide your response strictly in the following JSON structure:
 }
 `;
 
+  let timeoutId;
   try {
     const ai = new GoogleGenAI({ apiKey: config.geminiApiKey });
 
-    // Implement a 30-second timeout
-    const timeoutPromise = new Promise((_, reject) =>
-      setTimeout(() => reject(new Error('AI safety analysis timed out after 30 seconds.')), 30000)
-    );
+    // Implement a 30-second timeout with proper cleanup
+    const timeoutPromise = new Promise((_, reject) => {
+      timeoutId = setTimeout(() => reject(new Error('AI safety analysis timed out after 30 seconds.')), 30000);
+      if (timeoutId.unref) timeoutId.unref();
+    });
 
     const callPromise = ai.models.generateContent({
-      model: 'gemini-2.5-flash',
+      model: process.env.GEMINI_MODEL || 'gemini-3.8-flash',
       contents: prompt,
       config: {
         systemInstruction: SYSTEM_PROMPT,
@@ -411,6 +450,7 @@ Provide your response strictly in the following JSON structure:
     });
 
     const response = await Promise.race([callPromise, timeoutPromise]);
+    if (timeoutId) clearTimeout(timeoutId);
     const responseText = response.text?.trim() || '';
 
     // Clean JSON block formatting if present
@@ -425,6 +465,7 @@ Provide your response strictly in the following JSON structure:
     const validatedResult = AnalysisResponseSchema.parse(parsedJson);
     return validatedResult;
   } catch (err) {
+    if (timeoutId) clearTimeout(timeoutId);
     console.error('[GeminiService Error]:', err.message);
     // If Gemini fails due to quota, network, or schema invalidity, fall back to safe rules engine
     // and note the fallback in the clinical advisory limitations

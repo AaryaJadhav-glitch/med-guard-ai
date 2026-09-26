@@ -7,6 +7,7 @@ import medicationRoutes from './medication.routes.js';
 import analysisRoutes from './analysis.routes.js';
 import profileRoutes from './profile.routes.js';
 import dashboardRoutes from './dashboard.routes.js';
+import { registerWithOtp, verifyOtp, resendOtp, initiateLogin, completeTwoStepLogin, handleGoogleAuth } from '../controllers/auth.controller.js';
 
 const router = Router();
 
@@ -19,7 +20,15 @@ router.get('/health', (req, res) => {
   });
 });
 
-// Protected clinical endpoints require verified authentication
+// Public Authentication & Two-Step Verification Routes
+router.post('/auth/register', registerWithOtp);
+router.post('/auth/login-initiate', initiateLogin);
+router.post('/auth/login-verify', completeTwoStepLogin);
+router.post('/auth/verify-code', verifyOtp);
+router.post('/auth/resend-code', resendOtp);
+router.post('/auth/google', handleGoogleAuth);
+
+// Protected clinical endpoints require verified authentication & confirmed email
 router.use('/patients', requireAuth, patientRoutes);
 router.use('/patients/:patientId/allergies', requireAuth, allergyRoutes);
 router.use('/allergies', requireAuth, allergyRoutes);

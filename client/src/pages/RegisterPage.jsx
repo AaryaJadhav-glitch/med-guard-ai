@@ -1,51 +1,81 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { ShieldCheck, UserCheck, AlertCircle } from 'lucide-react';
+import { ShieldCheck, UserCheck, AlertCircle, Lock, Mail, Building, User } from 'lucide-react';
 import { Input, Select } from '../components/ui/Input';
 import { Button } from '../components/ui/Button';
+import { GoogleSignInButton } from '../components/auth/GoogleSignInButton';
 
 export function RegisterPage() {
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [organization, setOrganization] = useState('');
   const [role, setRole] = useState('physician');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [registeredNotice, setRegisteredNotice] = useState(false);
+
   const { signUp } = useAuth();
   const navigate = useNavigate();
 
   async function handleSubmit(e) {
     e.preventDefault();
-    if (!fullName || !email || !password) {
-      setError('Please complete all required fields.');
+
+    // 1. Validation
+    if (!fullName.trim() || !email.trim() || !password || !confirmPassword) {
+      setError('All required fields must be completed.');
       return;
     }
+
+    if (fullName.trim().length < 2) {
+      setError('Full name must be at least 2 characters.');
+      return;
+    }
+
+    // Basic email format check
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email.trim())) {
+      setError('Please provide a valid clinical email address.');
+      return;
+    }
+
     if (password.length < 8) {
-      setError('Password must be at least 8 characters for security compliance.');
+      setError('Password must be at least 8 characters long for clinical data security.');
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setError('Password confirmation does not match.');
       return;
     }
 
     try {
       setLoading(true);
       setError('');
-      const data = await signUp({
-        email,
+
+      // Create account & generate 3-letter + 3-number OTP code
+      const result = await signUp({
+        email: email.trim().toLowerCase(),
         password,
-        fullName,
-        organization
+        fullName: fullName.trim(),
+        organization: organization.trim(),
+        role
       });
 
-      // If Supabase has email confirmation enabled
-      if (data?.session) {
-        navigate('/dashboard');
-      } else {
-        setRegisteredNotice(true);
+      // Strict requirement: User MUST NOT get direct access to the dashboard.
+      // Redirect to the dedicated email verification screen to enter the OTP code.
+      const queryParams = new URLSearchParams({
+        email: email.trim().toLowerCase()
+      });
+      if (result?.devCode) {
+        queryParams.set('devCode', result.devCode);
       }
+
+      navigate(`/verify-email?${queryParams.toString()}`);
     } catch (err) {
-      setError(err.message || 'Registration failed. Please check details.');
+      console.error('Registration error:', err);
+      setError(err.message || 'Unable to complete registration. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -60,7 +90,7 @@ export function RegisterPage() {
             <ShieldCheck className="w-8 h-8" />
           </div>
           <h1 className="text-2xl font-extrabold text-white tracking-tight">
-            Med-Guard <span className="text-teal-400">AI</span>
+            Med - Guard <span className="text-teal-400">AI</span>
           </h1>
           <p className="text-xs uppercase tracking-widest font-semibold text-teal-300/80 mt-1">
             Clinical Safety & Interaction Prevention
@@ -76,83 +106,95 @@ export function RegisterPage() {
             </p>
           </div>
 
-          {registeredNotice ? (
-            <div className="p-4 bg-teal-50 border border-teal-200 rounded-xl text-teal-900 text-sm space-y-3">
-              <h4 className="font-bold text-teal-950">Registration Complete</h4>
-              <p className="text-xs text-teal-800">
-                Your account has been registered. If email confirmation is enabled on your Supabase project, please check your inbox to confirm, then sign in.
-              </p>
-              <Button className="w-full" onClick={() => navigate('/login')}>
-                Proceed to Sign In
-              </Button>
+          {error && (
+            <div className="mb-4 p-3 bg-rose-50 border border-rose-200 rounded-xl flex items-start gap-2 text-xs text-rose-800">
+              <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+              <span>{error}</span>
             </div>
-          ) : (
-            <>
-              {error && (
-                <div className="mb-4 p-3 bg-rose-50 border border-rose-200 rounded-xl flex items-start gap-2 text-xs text-rose-800">
-                  <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
-                  <span>{error}</span>
-                </div>
-              )}
-
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <Input
-                  label="Full Name & Title"
-                  required
-                  placeholder="e.g. Dr. Sarah Jenkins, MD"
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                />
-
-                <Input
-                  label="Hospital / Clinic Organization"
-                  placeholder="e.g. Memorial Hospital Health Network"
-                  value={organization}
-                  onChange={(e) => setOrganization(e.target.value)}
-                />
-
-                <Select
-                  label="Clinical Role"
-                  value={role}
-                  onChange={(e) => setRole(e.target.value)}
-                  options={[
-                    { value: 'physician', label: 'Attending Physician / Doctor (MD/DO)' },
-                    { value: 'pharmacist', label: 'Clinical Pharmacist (PharmD)' },
-                    { value: 'nurse_practitioner', label: 'Nurse Practitioner (NP/APRN)' },
-                    { value: 'physician_assistant', label: 'Physician Assistant (PA)' },
-                    { value: 'other_clinician', label: 'Healthcare Professional' }
-                  ]}
-                />
-
-                <Input
-                  label="Work Email"
-                  type="email"
-                  required
-                  placeholder="clinician@hospital.org"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                />
-
-                <Input
-                  label="Secure Password"
-                  type="password"
-                  required
-                  placeholder="Minimum 8 characters"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
-
-                <Button
-                  type="submit"
-                  className="w-full"
-                  loading={loading}
-                  icon={UserCheck}
-                >
-                  Create Clinician Account
-                </Button>
-              </form>
-            </>
           )}
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <Input
+              label="Full Name & Title"
+              required
+              placeholder="e.g. Dr. Sarah Jenkins, MD"
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+            />
+
+            <Input
+              label="Hospital / Practice Organization"
+              placeholder="e.g. Memorial Hospital Health Network"
+              value={organization}
+              onChange={(e) => setOrganization(e.target.value)}
+            />
+
+            <Select
+              label="Clinical Role"
+              value={role}
+              onChange={(e) => setRole(e.target.value)}
+              options={[
+                { value: 'physician', label: 'Attending Physician / Doctor (MD/DO)' },
+                { value: 'pharmacist', label: 'Clinical Pharmacist (PharmD)' },
+                { value: 'nurse_practitioner', label: 'Nurse Practitioner (NP/APRN)' },
+                { value: 'physician_assistant', label: 'Physician Assistant (PA)' },
+                { value: 'healthcare_professional', label: 'Healthcare Professional' }
+              ]}
+            />
+
+            <Input
+              label="Work Email"
+              type="email"
+              required
+              placeholder="clinician@hospital.org"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+
+            <Input
+              label="Password"
+              type="password"
+              required
+              placeholder="Minimum 8 characters"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+
+            <Input
+              label="Confirm Password"
+              type="password"
+              required
+              placeholder="Re-enter password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+            />
+
+            <Button
+              type="submit"
+              className="w-full mt-2"
+              loading={loading}
+              icon={UserCheck}
+            >
+              Create Account
+            </Button>
+          </form>
+
+          <div className="relative my-4">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-slate-200"></div>
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-white px-2 text-slate-400 font-semibold tracking-wider">Or register with</span>
+            </div>
+          </div>
+
+          <GoogleSignInButton
+            mode="signup"
+            onSuccess={() => {
+              navigate('/dashboard', { replace: true });
+            }}
+            onError={(errMsg) => setError(errMsg)}
+          />
 
           <div className="mt-6 pt-6 border-t border-slate-100 text-center">
             <p className="text-xs text-slate-600">

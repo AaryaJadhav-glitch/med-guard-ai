@@ -4,18 +4,18 @@ import rateLimit from 'express-rate-limit';
 import { config } from '../config/env.js';
 
 export const securityHeaders = helmet({
-  contentSecurityPolicy: {
+  contentSecurityPolicy: config.nodeEnv === 'production' ? {
     directives: {
       defaultSrc: ["'self'"],
-      scriptSrc: ["'self'"],
-      styleSrc: ["'self'", "'unsafe-inline'"],
+      scriptSrc: ["'self'", "'unsafe-inline'"],
+      styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
       imgSrc: ["'self'", 'data:', 'https:'],
-      connectSrc: ["'self'", config.supabaseUrl, 'https://generativelanguage.googleapis.com'],
-      fontSrc: ["'self'", 'https:', 'data:'],
+      connectSrc: ["'self'", config.supabaseUrl, 'https://*.supabase.co', 'https://generativelanguage.googleapis.com'],
+      fontSrc: ["'self'", 'https:', 'data:', 'https://fonts.gstatic.com'],
       objectSrc: ["'none'"],
       frameAncestors: ["'none'"]
     }
-  },
+  } : false,
   crossOriginEmbedderPolicy: false
 });
 
@@ -27,8 +27,10 @@ export const corsMiddleware = cors({
     const allowed = [
       config.corsOrigin,
       'http://localhost:5173',
-      'http://localhost:3000',
-      'http://127.0.0.1:5173'
+      'http://localhost:5000',
+      'http://127.0.0.1:5173',
+      'http://127.0.0.1:5000',
+      'http://localhost:3000'
     ];
 
     if (allowed.includes(origin) || config.nodeEnv === 'development') {

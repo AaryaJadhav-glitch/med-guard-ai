@@ -17,7 +17,14 @@ export const config = {
   supabaseAnonKey: process.env.SUPABASE_ANON_KEY || '',
   supabaseServiceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY || '',
   geminiApiKey: process.env.GEMINI_API_KEY || '',
-  databaseUrl: process.env.DATABASE_URL || ''
+  databaseUrl: process.env.DATABASE_URL || '',
+  smtpHost: process.env.SMTP_HOST || '',
+  smtpPort: parseInt(process.env.SMTP_PORT || '587', 10),
+  smtpSecure: process.env.SMTP_SECURE === 'true',
+  smtpUser: process.env.SMTP_USER || '',
+  smtpPass: process.env.SMTP_PASS || '',
+  smtpFrom: process.env.SMTP_FROM || 'Med - Guard AI <clinical-safety@medguard-ai.internal>',
+  googleClientId: process.env.GOOGLE_CLIENT_ID || '419199290607-c3c3unjgc7jgmjgluegoruca3f4e139j.apps.googleusercontent.com'
 };
 
 // Diagnostic warning without breaking startup if variables are still being configured

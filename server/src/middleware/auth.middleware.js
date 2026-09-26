@@ -2,7 +2,8 @@ import { supabaseAdmin, getScopedSupabaseClient } from '../config/supabase.js';
 
 /**
  * Authentication middleware that validates Supabase JWTs.
- * Extracts user details and attaches both req.user and a scoped Supabase client (req.supabase)
+ * Extracts user details, verifies that the email address is confirmed by Supabase Auth,
+ * and attaches both req.user and a scoped Supabase client (req.supabase)
  * to ensure that all database queries are subject to PostgreSQL Row Level Security (RLS).
  */
 export async function requireAuth(req, res, next) {
@@ -27,6 +28,14 @@ export async function requireAuth(req, res, next) {
     if (error || !user) {
       return res.status(401).json({
         error: 'Invalid or expired session. Please log in again.'
+      });
+    }
+
+    // Strict security requirement: ensure email has been confirmed by Supabase Auth
+    if (!user.email_confirmed_at) {
+      return res.status(403).json({
+        error: 'Email verification required. Please verify your email before accessing clinical resources.',
+        code: 'EMAIL_NOT_VERIFIED'
       });
     }
 

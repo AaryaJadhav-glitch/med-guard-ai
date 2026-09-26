@@ -16,6 +16,7 @@ import { Button } from '../components/ui/Button';
 import { LoadingSpinner, ErrorBanner } from '../components/ui/Feedback';
 import { RiskSummary } from '../components/analysis/RiskSummary';
 import { RiskAlert } from '../components/analysis/RiskAlert';
+import { AlternativeTabletsCard } from '../components/analysis/AlternativeTabletsCard';
 
 export function AnalysisDetailPage() {
   const { id } = useParams();
@@ -144,6 +145,9 @@ export function AnalysisDetailPage() {
         patientName={patient.full_name || patient.fullName}
         timestamp={analysis.created_at}
       />
+
+      {/* Recommended Alternative Tablets & Safe Formulations */}
+      <AlternativeTabletsCard alerts={analysis.result.alerts} />
 
       {/* List of Alerts */}
       <div className="space-y-4">

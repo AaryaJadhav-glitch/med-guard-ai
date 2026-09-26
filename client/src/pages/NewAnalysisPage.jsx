@@ -26,6 +26,7 @@ import {
 } from '../components/analysis/AnalysisComponents';
 import { RiskSummary } from '../components/analysis/RiskSummary';
 import { RiskAlert } from '../components/analysis/RiskAlert';
+import { AlternativeTabletsCard } from '../components/analysis/AlternativeTabletsCard';
 
 export function NewAnalysisPage() {
   const [searchParams] = useSearchParams();
@@ -377,6 +378,9 @@ export function NewAnalysisPage() {
             patientName={analysisResult.patient?.fullName}
             timestamp={analysisResult.createdAt}
           />
+
+          {/* Recommended Alternative Tablets & Safe Formulations */}
+          <AlternativeTabletsCard alerts={analysisResult.result.alerts} />
 
           {/* Alerts Breakdown List */}
           <div className="space-y-4">

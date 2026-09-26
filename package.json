@@ -5,12 +5,13 @@
   "description": "Med-Guard AI - Clinical Medication Safety & Drug-Interaction Prevention Platform",
   "type": "module",
   "scripts": {
-    "start": "npm --prefix server start",
+    "start": "node server/src/server.js",
     "server": "npm --prefix server run dev",
     "client": "npm --prefix client run dev",
     "dev": "concurrently \"npm --prefix server run dev\" \"npm --prefix client run dev\"",
     "postinstall": "npm --prefix client install",
     "build": "npm --prefix client run build",
+    "build:render": "npm install && npm --prefix client install && npm --prefix client run build",
     "test": "npm --prefix server test",
     "migrate": "node supabase/scripts/run-migration.js"
   },

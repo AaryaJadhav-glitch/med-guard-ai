@@ -1,0 +1,69 @@
+# ==============================================================================
+# Med-Guard AI - Git Ignore Configuration
+# ==============================================================================
+
+# Dependencies (Root, Client, Server)
+node_modules/
+*/node_modules/
+.pnp/
+.pnp.js
+
+# Environment Variables & Secret Credentials
+# Strictly ignore all root and nested .env files (client/.env, server/.env, etc.)
+.env
+.env.*
+*.env
+# Ensure .env.example remains tracked as a configuration template
+!.env.example
+
+# Production Build Outputs
+dist/
+dist-ssr/
+build/
+out/
+*.local
+
+# Bundler & Tooling Caches
+.vite/
+.cache/
+.parcel-cache/
+.turbo/
+*.tsbuildinfo
+
+# Logs & Runtime Diagnostics
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Test Coverage
+coverage/
+.nyc_output/
+
+# IDE, Editor & Project Files
+.idea/
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+*.swo
+*.swp
+
+# OS-Generated Temporary Files
+.DS_Store
+.DS_Store?
+._*
+[Tt]humbs.db
+[Ee]hthumbs.db
+[Dd]esktop.ini
+
+# Temporary / Scratch Files
+tmp/
+temp/

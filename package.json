@@ -1,0 +1,23 @@
+{
+  "name": "med-guard-ai",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Med-Guard AI - Clinical Medication Safety & Drug-Interaction Prevention Platform",
+  "type": "module",
+  "scripts": {
+    "start": "npm --prefix server start",
+    "server": "npm --prefix server run dev",
+    "client": "npm --prefix client run dev",
+    "dev": "concurrently \"npm --prefix server run dev\" \"npm --prefix client run dev\"",
+    "build": "npm --prefix client run build",
+    "test": "npm --prefix server test",
+    "migrate": "node supabase/scripts/run-migration.js"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  },
+  "dependencies": {
+    "dotenv": "^18.0.4",
+    "pg": "^8.23.0"
+  }
+}

@@ -28,9 +28,7 @@ export function errorHandler(err, req, res, _next) {
   }
 
   const statusCode = err.status || err.statusCode || 500;
-  const message = config.nodeEnv === 'production' && statusCode === 500
-    ? 'An unexpected clinical safety server error occurred. Please contact system administration.'
-    : err.message || 'Internal server error';
+  const message = err.message || 'An unexpected clinical safety server error occurred. Please contact system administration.';
 
   return res.status(statusCode).json({
     error: message,

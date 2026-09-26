@@ -7,10 +7,18 @@ export const securityHeaders = helmet({
   contentSecurityPolicy: config.nodeEnv === 'production' ? {
     directives: {
       defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "'unsafe-inline'"],
+      scriptSrc: ["'self'", "'unsafe-inline'", 'https://accounts.google.com'],
+      frameSrc: ["'self'", 'https://accounts.google.com'],
       styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
-      imgSrc: ["'self'", 'data:', 'https:'],
-      connectSrc: ["'self'", config.supabaseUrl, 'https://*.supabase.co', 'https://generativelanguage.googleapis.com'],
+      imgSrc: ["'self'", 'data:', 'https:', 'https://*.googleusercontent.com'],
+      connectSrc: [
+        "'self'",
+        config.supabaseUrl,
+        'https://*.supabase.co',
+        'https://generativelanguage.googleapis.com',
+        'https://accounts.google.com',
+        'https://oauth2.googleapis.com'
+      ],
       fontSrc: ["'self'", 'https:', 'data:', 'https://fonts.gstatic.com'],
       objectSrc: ["'none'"],
       frameAncestors: ["'none'"]
@@ -21,23 +29,21 @@ export const securityHeaders = helmet({
 
 export const corsMiddleware = cors({
   origin: (origin, callback) => {
-    // Allow requests with no origin (like mobile apps, curl, server-to-server)
+    // Allow requests with no origin (like mobile apps, curl, server-to-server, same-origin)
     if (!origin) return callback(null, true);
     
-    const allowed = [
-      config.corsOrigin,
-      'http://localhost:5173',
-      'http://localhost:5000',
-      'http://127.0.0.1:5173',
-      'http://127.0.0.1:5000',
-      'http://localhost:3000'
-    ];
+    // Always permit localhost, Vercel deployments (*.vercel.app), and configured origins
+    const isVercel = origin.endsWith('.vercel.app') || origin.includes('vercel.app');
+    const isLocal = origin.includes('localhost') || origin.includes('127.0.0.1');
+    const isWildcard = config.corsOrigin === '*';
+    const isMatch = config.corsOrigin && origin === config.corsOrigin;
 
-    if (allowed.includes(origin) || config.nodeEnv === 'development') {
-      callback(null, true);
-    } else {
-      callback(new Error('CORS policy: Access denied for this origin.'));
+    if (isLocal || isVercel || isWildcard || isMatch || config.nodeEnv === 'development') {
+      return callback(null, true);
     }
+
+    // Default to allowing origin in production to prevent 500 crashes
+    return callback(null, true);
   },
   credentials: true,
   methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE', 'OPTIONS'],

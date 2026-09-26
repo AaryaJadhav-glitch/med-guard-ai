@@ -4,27 +4,10 @@ import rateLimit from 'express-rate-limit';
 import { config } from '../config/env.js';
 
 export const securityHeaders = helmet({
-  contentSecurityPolicy: config.nodeEnv === 'production' ? {
-    directives: {
-      defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "'unsafe-inline'", 'https://accounts.google.com'],
-      frameSrc: ["'self'", 'https://accounts.google.com'],
-      styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
-      imgSrc: ["'self'", 'data:', 'https:', 'https://*.googleusercontent.com'],
-      connectSrc: [
-        "'self'",
-        config.supabaseUrl,
-        'https://*.supabase.co',
-        'https://generativelanguage.googleapis.com',
-        'https://accounts.google.com',
-        'https://oauth2.googleapis.com'
-      ],
-      fontSrc: ["'self'", 'https:', 'data:', 'https://fonts.gstatic.com'],
-      objectSrc: ["'none'"],
-      frameAncestors: ["'none'"]
-    }
-  } : false,
-  crossOriginEmbedderPolicy: false
+  contentSecurityPolicy: false, // Ensures Vite bundles, Google GIS scripts, fonts, and inline styles are never blocked
+  crossOriginEmbedderPolicy: false,
+  crossOriginOpenerPolicy: { policy: 'same-origin-allow-popups' },
+  crossOriginResourcePolicy: false
 });
 
 export const corsMiddleware = cors({
